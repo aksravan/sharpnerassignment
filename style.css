@@ -1,0 +1,10 @@
+.btn {
+    background-color: orange;
+    color: white;
+}
+
+@media  screen and (max-width: 720px) {
+    .btn {
+        background-color: black;
+    }
+}
