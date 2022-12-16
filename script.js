@@ -16,6 +16,8 @@
 var itemList = document.getElementById("users");
 itemList.addEventListener("click", removeItem);
 
+var users_data = [];
+
 function saveData(event) {
   event.preventDefault();
 
@@ -27,16 +29,34 @@ function saveData(event) {
     date: event.target.date.value,
   };
 
-  axios
-    .post(
-      "https://crudcrud.com/api/a65c3d8a11d341d5a89a225e951192bf/appointments",
-      appointment
-    )
+  let method = document
+    .getElementById("submitBtn")
+    .classList.value.includes("edit")
+    ? "patch"
+    : "post";
+
+  axios({
+    method: method,
+    url: "https://crudcrud.com/api/a65c3d8a11d341d5a89a225e951192bf/appointments",
+    data: appointment,
+  })
     .then((res) => {
-      console.log(res);
-      alert("User Added successfully.");
+      alert("User Added/Updated successfully.");
+
+      if (method == "patch"){
+        document.getElementById("submitBtn").classList.remove("edit");
+      }
     })
     .catch((err) => alert(err));
+  //   axios
+  //     .post(
+  //       "https://crudcrud.com/api/a65c3d8a11d341d5a89a225e951192bf/appointments",
+  //       appointment
+  //     )
+  //     .then((res) => {
+  //       alert("User Added successfully.");
+  //     })
+  //     .catch((err) => alert(err));
 }
 
 function getData() {
@@ -45,6 +65,8 @@ function getData() {
   axios
     .get("https://jsonplaceholder.typicode.com/users?_limit=5")
     .then((res) => {
+      users_data = res.data;
+      console.log(users_data);
       let data = "";
       for (let obj of res.data) {
         data += `<div class="card" style="margin: 0% 30%">
@@ -71,33 +93,31 @@ getData();
 function removeItem(event) {
   //delete expense
   if (event.target.classList.contains("delete")) {
-    if (confirm("Are You Sure?")) {
-      let delete_id = event.target.id;
-      axios
-        .delete("https://jsonplaceholder.typicode.com/users/" + delete_id)
-        .then((res) => {
-          let parentDiv = event.target.parentElement.parentElement;
-          itemList.removeChild(parentDiv);
-          alert("User Deleted Successfully");
-        })
-        .catch((err) => alert(`Error: ${err.message} occurred.`));
-    }
+    let delete_id = event.target.id;
+    users_data.splice(parseInt(delete_id) - 1, parseInt(delete_id) - 1);
+    axios
+      .delete("https://jsonplaceholder.typicode.com/users/" + delete_id)
+      .then((res) => {
+        let parentDiv = event.target.parentElement.parentElement;
+        itemList.removeChild(parentDiv);
+        alert("User Deleted Successfully");
+      })
+      .catch((err) => alert(`Error: ${err.message} occurred.`));
   }
   //edit expense
-//   if (event.target.classList.contains("edit")) {
-//     var li = event.target.parentElement;
-//     var delete_value = event.target.parentElement.innerHTML.split("<")[0];
+  if (event.target.classList.contains("edit")) {
+    let delete_node = event.target.parentElement.parentElement;
 
-//     itemList.removeChild(li);
-//     var values = delete_value.split("-");
-//     document.getElementById("amount").value = values[0];
-//     document.getElementById("desc").value = values[1];
-//     document.getElementById("category").value = values[2];
-//   }
+    let edit_id = event.target.id;
+
+    let values = users_data[parseInt(edit_id) - 1];
+    users_data.splice(parseInt(edit_id) - 1, parseInt(edit_id) - 1);
+    const save_btn = document.getElementById("submitBtn");
+    save_btn.classList.add("edit");
+
+    itemList.removeChild(delete_node);
+    document.getElementById("name").value = values.name;
+    document.getElementById("email").value = values.email;
+    document.getElementById("phone").value = values.phone;
+  }
 }
-
-// const btn1 = document.querySelector(".btn");
-// btn1.addEventListener("mouseout", (event) => {
-//   event.preventDefault();
-//   btn1.style.color = "pink";
-// });
